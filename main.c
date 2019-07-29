@@ -29,11 +29,16 @@ int set_if_up(char *dev)
   return run_cmd("ip link set dev %s up", dev);
 }
 
-int set_route(char *dev, char *cidr)
+int set_if_address(char *dev, char *addr)
 {
-  return run_cmd("ip route add dev %s %s", dev, cidr);
+  return run_cmd("ip address add dev %s local %s", dev, addr);
 }
 
+int set_route(char *dev, char *cidr)
+{
+  //return run_cmd("route add 10.10.10.1 dev tun0");
+  return run_cmd("ip route add  %s dev %s", cidr, dev);
+}
 
 int tun_alloc(char *dev)
 {
@@ -67,11 +72,18 @@ int main(int argc, char **argv)
   int tun_fd = -1;
   char buf[100];
   char *dev = calloc(10, 1);
-  tun_alloc(dev);
+  tun_fd = tun_alloc(dev);
+
+  printf("%d %s\n", tun_fd,  dev);
 
   if (set_if_up(dev) != 0)
   {
     printf("ERROR when setting up if\n");
+  }
+
+  if(set_if_address(dev, "10.0.0.5/24") != 0) 
+  {
+    printf("Error when set ipaddress \n");
   }
 
   if( set_route(dev, "10.0.0.0/24") != 0 )
@@ -79,7 +91,12 @@ int main(int argc, char **argv)
     printf("ERROR when setting route for if\n");
   }
 
-  read(tun_fd, buf, 100);
+  while (1){
+      int ret = 0;
+      ret  = read(tun_fd, buf, 100);
+      printf("Recv: %d\n", ret);
+      printf("Recv: %s", buf);
+  }
   free(dev);
   return 0;
 }
