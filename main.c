@@ -67,6 +67,16 @@ int tun_alloc(char *dev)
   return fd;
 }
 
+void print_hex(char *buf, int len)
+{
+  int i = 0;
+  for (i = 0; i < len; i++)
+  {
+    if (i % 8 == 0) printf("\n");
+    printf("%02x ", (unsigned char)buf[i]);
+  }
+}
+
 int main(int argc, char **argv)
 {
   int tun_fd = -1;
@@ -95,7 +105,8 @@ int main(int argc, char **argv)
       int ret = 0;
       ret  = read(tun_fd, buf, 100);
       printf("Recv: %d\n", ret);
-      printf("Recv: %s", buf);
+      print_hex(buf, ret);
+      printf("\n");
   }
   free(dev);
   return 0;
